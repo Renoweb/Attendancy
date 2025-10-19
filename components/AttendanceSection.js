@@ -7,15 +7,21 @@ import GlassCard from './GlassCard'
 export default function AttendanceSection() {
   const [marked, setMarked] = useState(false)
   const [summary, setSummary] = useState('')
+  const [isHoliday, setIsHoliday] = useState(false)
+
+  // 🔹 Define holidays (same as in CalendarSection)
+  const holidays = ['2025-10-19', '2025-10-22']
 
   useEffect(() => {
-    // Later: Check if attendance for today exists (uncomment)
+    const today = dayjs().format('YYYY-MM-DD')
+    if (holidays.includes(today)) setIsHoliday(true)
+
+    // Later: Check if attendance already exists in DB
     /*
     const load = async () => {
       const { data: userData } = await supabase.auth.getUser()
       const user = userData?.user
       if (!user) return
-      const today = dayjs().format('YYYY-MM-DD')
       const { data } = await supabase
         .from('attendance')
         .select('id')
@@ -28,7 +34,8 @@ export default function AttendanceSection() {
   }, [])
 
   const handleMark = async () => {
-    if (marked) return
+    if (marked || isHoliday) return
+
     let today = dayjs().format('YYYY-MM-DD')
     const time = dayjs().format('HH:mm:ss')
 
@@ -59,35 +66,41 @@ export default function AttendanceSection() {
 
     // Fake success:
     setMarked(true)
-    // Optional: visually simulate calendar update
-    // Trigger calendar update for today
-    today = dayjs().format('YYYY-MM-DD')
     window.dispatchEvent(new CustomEvent('attendance-marked', { detail: today }))
-
-
     alert('Marked attendance for today ✅')
-    console.log('Simulating attendance added to DB: ', dayjs().format('YYYY-MM-DD'))
   }
 
   return (
     <GlassCard className="space-y-4">
       <h2 className="text-xl font-semibold text-blue-700">Today's Attendance</h2>
+
+      {isHoliday && (
+        <p className="text-red-500 text-sm font-medium">
+          Today is a holiday 🎉 — attendance disabled.
+        </p>
+      )}
+
       <textarea
         className="w-full p-3 rounded-lg bg-white/30 border border-white/50 focus:outline-none focus:ring-2 focus:ring-blue-300"
         placeholder="What did you work on today?"
         value={summary}
         onChange={(e) => setSummary(e.target.value)}
-        disabled={marked}
+        disabled={marked || isHoliday}
       ></textarea>
+
       <button
         onClick={handleMark}
-        disabled={marked}
-        className={`w-full py-2 rounded-lg text-white font-semibold transition ${marked
+        disabled={marked || isHoliday}
+        className={`w-full py-2 rounded-lg text-white font-semibold transition ${marked || isHoliday
           ? 'bg-gray-400 cursor-not-allowed'
           : 'bg-blue-600 hover:bg-blue-700'
           }`}
       >
-        {marked ? 'Already Marked' : 'Mark Attendance'}
+        {isHoliday
+          ? 'Holiday — Attendance Locked'
+          : marked
+            ? 'Already Marked'
+            : 'Mark Attendance'}
       </button>
     </GlassCard>
   )

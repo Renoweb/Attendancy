@@ -4,7 +4,9 @@ import AttendanceSection from "@/components/AttendanceSection"
 import CalendarSection from "@/components/CalendarSection"
 import HeaderBanner from "@/components/HeaderBanner"
 import LogoutButton from "@/components/LogoutButton"
+import OnboardingModal from "@/components/OnboardingModal"
 import StatsCard from "@/components/StatsCard"
+import UserInfo from "@/components/UserInfo"
 import AuthSync from "@/lib/AuthSync"
 import { supabase } from "@/lib/supabaseClient"
 import { useRouter } from "next/navigation"
@@ -28,7 +30,9 @@ function DashboardPageWrapper({ children }) {
 export default function DashboardPage() {
     return (
         <DashboardPageWrapper >
+            <UserInfo />
             <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 flex items-center justify-center py-12 px-4">
+                <OnboardingModal />
                 <LogoutButton />
                 <AuthSync />
                 <div className="w-full max-w-5xl space-y-8">
