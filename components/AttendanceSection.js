@@ -2,72 +2,71 @@
 import { useState, useEffect } from 'react'
 import dayjs from 'dayjs'
 import GlassCard from './GlassCard'
-// import { supabase } from '@/lib/supabaseClient'
+import { supabase } from '@/lib/supabaseClient'
 
 export default function AttendanceSection() {
   const [marked, setMarked] = useState(false)
   const [summary, setSummary] = useState('')
   const [isHoliday, setIsHoliday] = useState(false)
-
-  // 🔹 Define holidays (same as in CalendarSection)
-  const holidays = ['2025-10-19', '2025-10-22']
+  const [today, setToday] = useState(dayjs().format('YYYY-MM-DD'))
 
   useEffect(() => {
-    const today = dayjs().format('YYYY-MM-DD')
-    if (holidays.includes(today)) setIsHoliday(true)
-
-    // Later: Check if attendance already exists in DB
-    /*
-    const load = async () => {
-      const { data: userData } = await supabase.auth.getUser()
-      const user = userData?.user
+    const loadData = async () => {
+      // Fetch current user
+      const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
-      const { data } = await supabase
+
+      // 1️⃣ Check if today is holiday
+      const { data: holidayData } = await supabase
+        .from('holidays')
+        .select('date')
+        .eq('date', today)
+        .maybeSingle()
+
+      if (holidayData) {
+        setIsHoliday(true)
+        return
+      }
+
+      // 2️⃣ Check if attendance already marked
+      const { data: attendanceData } = await supabase
         .from('attendance')
         .select('id')
         .eq('user_id', user.id)
         .eq('date', today)
-      setMarked(data && data.length > 0)
+
+      setMarked(attendanceData && attendanceData.length > 0)
     }
-    load()
-    */
-  }, [])
+
+    loadData()
+  }, [today])
 
   const handleMark = async () => {
     if (marked || isHoliday) return
+    // const time = dayjs().format('HH:mm:ss')
 
-    let today = dayjs().format('YYYY-MM-DD')
-    const time = dayjs().format('HH:mm:ss')
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return alert('You must be logged in!')
 
-    // Uncomment to save via Supabase
-    /*
-    const { data: userData } = await supabase.auth.getUser()
-    const user = userData?.user
-    if (!user) {
-      alert('Not logged in')
-      return
-    }
     const { error } = await supabase
       .from('attendance')
       .insert([
         {
           user_id: user.id,
           date: today,
-          time: time,
           work_summary: summary || null,
         },
       ])
+
     if (error) {
       console.error(error)
       alert('Error saving attendance')
       return
     }
-    */
 
-    // Fake success:
     setMarked(true)
     window.dispatchEvent(new CustomEvent('attendance-marked', { detail: today }))
-    alert('Marked attendance for today ✅')
+    alert('Attendance marked successfully ✅')
   }
 
   return (
@@ -86,7 +85,7 @@ export default function AttendanceSection() {
         value={summary}
         onChange={(e) => setSummary(e.target.value)}
         disabled={marked || isHoliday}
-      ></textarea>
+      />
 
       <button
         onClick={handleMark}
