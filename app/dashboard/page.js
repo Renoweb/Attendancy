@@ -9,8 +9,9 @@ import StatsCard from "@/components/StatsCard"
 import UserInfo from "@/components/UserInfo"
 import AuthSync from "@/lib/AuthSync"
 import { supabase } from "@/lib/supabaseClient"
+import dayjs from "dayjs"
 import { useRouter } from "next/navigation"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 
 function DashboardPageWrapper({ children }) {
     const router = useRouter()
@@ -28,6 +29,48 @@ function DashboardPageWrapper({ children }) {
 
 
 export default function DashboardPage() {
+    const [stats, setStats] = useState({ holidays: 0, attendance: 0, missed: 0 });
+    useEffect(() => {
+        const loadStats = async () => {
+            const { data: { user } } = await supabase.auth.getUser()
+            if (!user) return
+
+            // Get current month range
+            const startOfMonth = dayjs().startOf('month').format('YYYY-MM-DD')
+            const endOfMonth = dayjs().endOf('month').format('YYYY-MM-DD')
+
+            // 🎉 Count holidays in this month
+            const { data: holidays } = await supabase
+                .from('holidays')
+                .select('date')
+                .gte('date', startOfMonth)
+                .lte('date', endOfMonth)
+
+            // ✅ Count attendance entries
+            const { data: attendance } = await supabase
+                .from('attendance')
+                .select('date')
+                .eq('user_id', user.id)
+                .gte('date', startOfMonth)
+                .lte('date', endOfMonth)
+
+            const holidaysCount = holidays?.length || 0
+            const attendanceCount = attendance?.length || 0
+
+            // 🧮 Calculate missed days
+            const today = dayjs()
+            const totalDaysUntilToday = today.date() // days passed in month
+            const missed = totalDaysUntilToday - attendanceCount - holidaysCount
+
+            setStats({
+                holidays: holidaysCount,
+                attendance: attendanceCount,
+                missed: missed < 0 ? 0 : missed,
+            })
+        }
+
+        loadStats()
+    }, [])
     return (
         <DashboardPageWrapper >
             <UserInfo />
@@ -39,11 +82,11 @@ export default function DashboardPage() {
                     <HeaderBanner />
 
                     {/* Stats row */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                        <StatsCard count={5} label="This Month Present" />
-                        <StatsCard count={2} label="Holidays" />
-                        <StatsCard count={20} label="Total Attendance" />
-                        <StatsCard count={0} label="Missed Days" />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                        {/* <StatsCard count={5} label="This Month Present" /> */}
+                        <StatsCard count={stats.holidays} label="Holidays" />
+                        <StatsCard count={stats.attendance} label="Total Attendance" />
+                        <StatsCard count={stats.missed} label="Missed Days" />
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

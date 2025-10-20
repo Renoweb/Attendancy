@@ -20,7 +20,7 @@ export default function UserInfo() {
 
         fetchUser()
     }, [])
-    console.log('User Data:', userData)
+    // console.log('User Data:', userData)
 
     if (!userData) return null
 

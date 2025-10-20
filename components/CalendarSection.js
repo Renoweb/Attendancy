@@ -3,48 +3,55 @@ import { useState, useEffect, useMemo } from 'react'
 import Calendar from 'react-calendar'
 import dayjs from 'dayjs'
 import 'react-calendar/dist/Calendar.css'
+import { supabase } from '@/lib/supabaseClient'
 // import { supabase } from '@/lib/supabaseClient' // Uncomment later for DB connection
 
 export default function CalendarSection() {
-  // 🧩 Dummy attendance dates (replace later with fetched Supabase data)
-  // 🧩 Dummy attendance and holidays
-  const initialAttendance = useMemo(
-    () => ['2025-10-11', '2025-10-12', '2025-10-13', '2025-10-16'],
-    []
-  )
-  const holidays = useMemo(() => ['2025-10-19', '2025-10-22'], [])
 
   // ✅ Make attendance dynamic
-  const [attendanceDates, setAttendanceDates] = useState(initialAttendance)
+  const [attendanceDates, setAttendanceDates] = useState([])
+  const [holidays, setHolidays] = useState([])
 
-  // When "Mark Attendance" event is fired
   useEffect(() => {
-    const handleMarked = (e) => {
-      setAttendanceDates((prev) => [...new Set([...prev, e.detail])])
+    const fetchData = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      // 🗓️ Fetch attendance
+      const { data: attData } = await supabase
+        .from('attendance')
+        .select('date')
+        .eq('user_id', user.id)
+
+      // 🎉 Fetch holidays
+      const { data: holData } = await supabase.from('holidays').select('date')
+      // console.log('Fetched holidays:', holData)
+
+
+      setAttendanceDates(attData?.map((a) => dayjs(a.date).format('YYYY-MM-DD')) || [])
+      setHolidays(
+        holData?.map((h) => dayjs(h.date).format('YYYY-MM-DD')) || []
+      )
+
     }
+
+    fetchData()
+
+    const handleMarked = (e) =>
+      setAttendanceDates((prev) => [...new Set([...prev, e.detail])])
     window.addEventListener('attendance-marked', handleMarked)
     return () => window.removeEventListener('attendance-marked', handleMarked)
   }, [])
 
-
-
-  // 🎨 For each calendar tile
   const tileClassName = ({ date, view }) => {
     if (view === 'month') {
       const d = dayjs(date).format('YYYY-MM-DD')
-
-      // Red for holidays
       if (holidays.includes(d)) return 'holiday-day'
-
-      // Solid blue if marked
       if (attendanceDates.includes(d)) return 'attended-day'
-
-      // Light blue if today (not yet marked)
       if (d === dayjs().format('YYYY-MM-DD')) return 'today-day'
     }
     return null
   }
-
 
   return (
     <div className="p-6 rounded-2xl bg-white/20 border border-white/30 backdrop-blur-2xl shadow-lg">
