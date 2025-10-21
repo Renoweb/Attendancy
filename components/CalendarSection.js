@@ -1,10 +1,13 @@
 'use client'
 import { useState, useEffect, useMemo } from 'react'
-import Calendar from 'react-calendar'
+// import Calendar from 'react-calendar'
+import dynamic from 'next/dynamic'
 import dayjs from 'dayjs'
 import 'react-calendar/dist/Calendar.css'
 import { supabase } from '@/lib/supabaseClient'
 // import { supabase } from '@/lib/supabaseClient' // Uncomment later for DB connection
+
+const Calendar = dynamic(() => import('react-calendar'), { ssr: false })
 
 export default function CalendarSection() {
 
@@ -61,6 +64,7 @@ export default function CalendarSection() {
 
       {/* Read-only calendar */}
       <Calendar
+        locale="en-US"
         tileClassName={tileClassName}
         className="pointer-events-none opacity-95"
       />
