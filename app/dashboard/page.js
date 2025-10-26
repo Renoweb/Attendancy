@@ -30,9 +30,21 @@ function DashboardPageWrapper({ children }) {
 
 export default function DashboardPage() {
     const [stats, setStats] = useState({ holidays: 0, attendance: 0, missed: 0 });
+    const [isAdmin, setIsAdmin] = useState(false);
+    const router = useRouter()
     useEffect(() => {
         const loadStats = async () => {
             const { data: { user } } = await supabase.auth.getUser()
+            const { data: emp } = await supabase
+                .from('employees')
+                .select('is_admin')
+                .eq('id', user.id)
+                .single()
+
+            if (emp?.is_admin) {
+                // show "Go to Admin Panel" button
+                setIsAdmin(true);
+            }
             if (!user) return
 
             // Get current month range
@@ -71,8 +83,19 @@ export default function DashboardPage() {
 
         loadStats()
     }, [])
+
+
     return (
         <DashboardPageWrapper >
+            {isAdmin && (
+                <button
+                    onClick={() => router.push('/admin')}
+                    className="bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold shadow-md hover:bg-blue-700"
+                >
+                    Go to Admin Panel
+                </button>
+            )}
+
             <UserInfo />
             <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 flex items-center justify-center py-12 px-4">
                 <OnboardingModal />
