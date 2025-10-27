@@ -26,8 +26,8 @@ export default function UserInfo() {
 
     return (
         <div
-            className="
-        w-3/12 mt-5 ml-5
+            className="w-full
+        lg:w-3/12  mt-20 lg:mt-5 ml-5
         flex items-center gap-4
         px-4 py-2
         rounded-2xl border border-white/30

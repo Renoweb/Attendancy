@@ -124,7 +124,14 @@ export default function DashboardPage() {
             {isAdmin && (
                 <button
                     onClick={() => router.push('/admin')}
-                    className="bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold shadow-md hover:bg-blue-700"
+                    className="absolute top-6 lg:top-22 left-6 lg:left-auto lg:right-6 z-50
+        flex items-center gap-2
+        px-5 py-2.5 rounded-xl font-semibold
+        text-white bg-blue-600
+        hover:bg-blue-700 active:scale-95
+        disabled:bg-gray-400
+        transition-all duration-200
+        shadow-md hover:shadow-lg"
                 >
                     Go to Admin Panel
                 </button>
