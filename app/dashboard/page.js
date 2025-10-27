@@ -31,34 +31,37 @@ function DashboardPageWrapper({ children }) {
 export default function DashboardPage() {
     const [stats, setStats] = useState({ holidays: 0, attendance: 0, missed: 0 });
     const [isAdmin, setIsAdmin] = useState(false);
+    const [loading, setLoading] = useState(true)
+
     const router = useRouter()
+
     useEffect(() => {
-        const loadStats = async () => {
+        const loadStats = async (month = dayjs()) => {
+            setLoading(true);
             const { data: { user } } = await supabase.auth.getUser()
+            if (!user) return
+
+            // Check if admin
             const { data: emp } = await supabase
                 .from('employees')
                 .select('is_admin')
                 .eq('id', user.id)
                 .single()
 
-            if (emp?.is_admin) {
-                // show "Go to Admin Panel" button
-                setIsAdmin(true);
-            }
-            if (!user) return
+            if (emp?.is_admin) setIsAdmin(true)
 
-            // Get current month range
-            const startOfMonth = dayjs().startOf('month').format('YYYY-MM-DD')
-            const endOfMonth = dayjs().endOf('month').format('YYYY-MM-DD')
+            // 🗓️ Use selected month (from calendar)
+            const startOfMonth = month.startOf('month').format('YYYY-MM-DD')
+            const endOfMonth = month.endOf('month').format('YYYY-MM-DD')
 
-            // 🎉 Count holidays in this month
+            // 🎉 Count holidays
             const { data: holidays } = await supabase
                 .from('holidays')
                 .select('date')
                 .gte('date', startOfMonth)
                 .lte('date', endOfMonth)
 
-            // ✅ Count attendance entries
+            // ✅ Count attendance
             const { data: attendance } = await supabase
                 .from('attendance')
                 .select('date')
@@ -71,18 +74,49 @@ export default function DashboardPage() {
 
             // 🧮 Calculate missed days
             const today = dayjs()
-            const totalDaysUntilToday = today.date() // days passed in month
-            const missed = totalDaysUntilToday - attendanceCount - holidaysCount
+            const isCurrentMonth = today.isSame(month, 'month')
+            const totalDaysInScope = isCurrentMonth
+                ? today.date() // only up to today for current month
+                : month.endOf('month').date() // full month for past months
+
+            const missed = totalDaysInScope - attendanceCount - holidaysCount
 
             setStats({
                 holidays: holidaysCount,
                 attendance: attendanceCount,
                 missed: missed < 0 ? 0 : missed,
             })
+            setLoading(false);
         }
 
+        // 🔹 Initial load (for current month)
         loadStats()
+
+        // 🔁 When attendance is marked
+        const handleAttendanceMarked = () => {
+            console.log('📅 Attendance marked → refreshing stats...')
+            loadStats()
+        }
+
+        // 🔁 When calendar month changes
+        const handleMonthChanged = (e) => {
+            const monthString = e.detail // e.g. "2025-10"
+            const selectedMonth = dayjs(monthString, 'YYYY-MM')
+            console.log('🗓️ Month changed →', selectedMonth.format('MMMM YYYY'))
+            loadStats(selectedMonth)
+        }
+
+        window.addEventListener('attendance-marked', handleAttendanceMarked)
+        window.addEventListener('month-changed', handleMonthChanged)
+
+        return () => {
+            window.removeEventListener('attendance-marked', handleAttendanceMarked)
+            window.removeEventListener('month-changed', handleMonthChanged)
+        }
     }, [])
+
+
+
 
 
     return (
@@ -107,9 +141,9 @@ export default function DashboardPage() {
                     {/* Stats row */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                         {/* <StatsCard count={5} label="This Month Present" /> */}
-                        <StatsCard count={stats.holidays} label="Holidays" />
-                        <StatsCard count={stats.attendance} label="Total Attendance" />
-                        <StatsCard count={stats.missed} label="Missed Days" />
+                        <StatsCard loading={loading} count={stats.holidays} label="Holidays" />
+                        <StatsCard loading={loading} count={stats.attendance} label="Total Attendance" />
+                        <StatsCard loading={loading} count={stats.missed} label="Missed Days" />
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
