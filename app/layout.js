@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 export const metadata = {
   title: "Attendance Tracker",
   description: "Track company attendance easily.",
-  manifest: '../manifest.json',
+  manifest: '/manifest.json',
 };
 
 export default function RootLayout({ children }) {
