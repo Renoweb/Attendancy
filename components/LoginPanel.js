@@ -50,6 +50,8 @@ export default function LoginPanel() {
                         alt="Company Logo"
                         className="w-40 h-40 sm:w-56 sm:h-56 lg:w-64 lg:h-64 object-contain drop-shadow-2xl"
                     />
+                    <h1 className="text-3xl md:text-[50px] font-bold text-[#308fef] drop-shadow-sm text-center">Renoweb</h1>
+                    <h4 className="text-center text-xl md:text-[20px] font-bold text-[#023dbb] ">Digital Solutions</h4>
                 </div>
             </div>
         </div>

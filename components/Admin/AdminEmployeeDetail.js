@@ -11,6 +11,8 @@ export default function AdminEmployeeDetail({ employee, attendance }) {
     const [selectedDate, setSelectedDate] = useState(null)
     const [sessions, setSessions] = useState([])
     const [loadingSessions, setLoadingSessions] = useState(false)
+    const [selectedSummary, setSelectedSummary] = useState(null)
+
 
     // Stats
     const stats = useMemo(() => {
@@ -62,6 +64,13 @@ export default function AdminEmployeeDetail({ employee, attendance }) {
             .order('start_time', { ascending: true })
 
         setSessions(data || [])
+
+        // get summary from attendance
+        const record = attendance.find(
+            a => dayjs(a.date).format('YYYY-MM-DD') === d
+        )
+        setSelectedSummary(record?.work_summary || null)
+
         setLoadingSessions(false)
     }
 
@@ -116,6 +125,19 @@ export default function AdminEmployeeDetail({ employee, attendance }) {
                         <li>Days Present: <strong className="text-green-600">{stats.present}</strong></li>
                         <li>Days Missed: <strong className="text-red-500">{stats.absent}</strong></li>
                     </ul>
+
+                    {/* Summary */}
+                    {selectedSummary && (
+                        <div className="mb-4 bg-blue-50 border border-blue-200 rounded-xl p-4">
+                            <p className="text-sm font-semibold text-blue-700 mb-1">
+                                Work Summary
+                            </p>
+                            <p className="text-gray-700 text-sm leading-relaxed">
+                                {selectedSummary}
+                            </p>
+                        </div>
+                    )}
+
 
                     {/* DAY DETAIL PANEL */}
                     {selectedDate && (
