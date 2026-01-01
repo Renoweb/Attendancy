@@ -1,10 +1,10 @@
 'use client'
 import Calendar from 'react-calendar'
 import dayjs from 'dayjs'
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import 'react-calendar/dist/Calendar.css'
-import { Tooltip } from 'react-tooltip'
-import 'react-tooltip/dist/react-tooltip.css'
+// import { Tooltip } from 'react-tooltip'
+// import 'react-tooltip/dist/react-tooltip.css'
 import { supabase } from '@/lib/supabaseClient'
 
 export default function AdminEmployeeDetail({ employee, attendance }) {
@@ -101,7 +101,7 @@ export default function AdminEmployeeDetail({ employee, attendance }) {
                         className="bg-white/60 rounded-xl shadow-md"
                     />
 
-                    <Tooltip
+                    {/* <Tooltip
                         id="attendance-tooltip"
                         place="top"
                         style={{
@@ -111,7 +111,7 @@ export default function AdminEmployeeDetail({ employee, attendance }) {
                             padding: '6px 10px',
                             fontSize: '0.875rem'
                         }}
-                    />
+                    /> */}
                 </div>
 
                 {/* RIGHT */}
@@ -129,14 +129,22 @@ export default function AdminEmployeeDetail({ employee, attendance }) {
                     {/* Summary */}
                     {selectedSummary && (
                         <div className="mb-4 bg-blue-50 border border-blue-200 rounded-xl p-4">
-                            <p className="text-sm font-semibold text-blue-700 mb-1">
+                            <p className="text-sm font-semibold text-blue-700 mb-2">
                                 Work Summary
                             </p>
-                            <p className="text-gray-700 text-sm leading-relaxed">
+
+                            <div
+                                className="text-gray-700 text-sm leading-relaxed max-h-56 overflow-y-auto pr-2"
+                                style={{
+                                    whiteSpace: 'pre-wrap',
+                                    wordBreak: 'break-word'
+                                }}
+                            >
                                 {selectedSummary}
-                            </p>
+                            </div>
                         </div>
                     )}
+
 
 
                     {/* DAY DETAIL PANEL */}
