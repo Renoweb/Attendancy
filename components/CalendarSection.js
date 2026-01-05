@@ -12,6 +12,15 @@ export default function CalendarSection() {
   const [holidays, setHolidays] = useState([])
   const [currentMonth, setCurrentMonth] = useState(dayjs()) // 🗓️ track current month
 
+  const holidayMap = useMemo(() => {
+    const map = {}
+    holidays.forEach(h => {
+      if (!map[h.date]) map[h.date] = []
+      map[h.date].push(h.type)
+    })
+    return map
+  }, [holidays])
+
   // ✅ Fetch data for a specific month
   const fetchMonthData = async (month) => {
     const { data: { user } } = await supabase.auth.getUser()
@@ -31,12 +40,19 @@ export default function CalendarSection() {
     // Holidays for current month
     const { data: holData } = await supabase
       .from('holidays')
-      .select('date')
+      .select('date, type')
       .gte('date', startOfMonth)
       .lte('date', endOfMonth)
 
+
     setAttendanceDates(attData?.map(a => dayjs(a.date).format('YYYY-MM-DD')) || [])
-    setHolidays(holData?.map(h => dayjs(h.date).format('YYYY-MM-DD')) || [])
+    setHolidays(
+      holData?.map(h => ({
+        date: dayjs(h.date).format('YYYY-MM-DD'),
+        type: h.type
+      })) || []
+    )
+
   }
 
   // ✅ Fetch data on load
@@ -66,12 +82,36 @@ export default function CalendarSection() {
   const tileClassName = ({ date, view }) => {
     if (view === 'month') {
       const d = dayjs(date).format('YYYY-MM-DD')
-      if (holidays.includes(d)) return 'holiday-day'
-      if (attendanceDates.includes(d)) return 'attended-day'
+      const dayHolidays = holidayMap[d] || []
+
+      // 🔵 Attendance ALWAYS wins
+      // if (attendanceDates.includes(d)) {
+      //   if (dayHolidays.includes('RESTRICTED')) return 'attended-day restricted-ring'
+      //   if (dayHolidays.includes('GAZETTED')) return 'attended-day gazetted-ring'
+      //   return 'attended-day'
+      // }
+      if (attendanceDates.includes(d)) {
+        if (dayHolidays.includes('GAZETTED')) {
+          return 'attended-holiday'
+        }
+        if (dayHolidays.includes('RESTRICTED')) {
+          return 'attended-day restricted-ring'
+        }
+        return 'attended-day'
+      }
+
+
+      // 🔴 Gazetted holiday (no attendance)
+      if (dayHolidays.includes('GAZETTED')) return 'holiday-gazetted'
+
+      // 🟡 Restricted holiday (optional)
+      if (dayHolidays.includes('RESTRICTED')) return 'holiday-restricted'
+
       if (d === dayjs().format('YYYY-MM-DD')) return 'today-day'
     }
     return null
   }
+
 
   return (
     <div className="p-6 rounded-2xl bg-white/20 border border-white/30 backdrop-blur-2xl shadow-lg">
@@ -86,7 +126,14 @@ export default function CalendarSection() {
         className="opacity-95"
       />
 
-      <div className="mt-4 text-sm text-gray-700">Blue = Present | Red = Holiday</div>
+      <div className="mt-4 text-sm text-gray-700 space-y-1">
+        <div>🔵 <span className="font-medium">Blue</span> — Attendance marked</div>
+        <div>🟡 <span className="font-medium">Yellow ring</span> — Restricted (optional) holiday</div>
+        <div>🔴 <span className="font-medium">Red ring</span> — Gazetted holiday</div>
+        <div>🟣 <span className="font-medium">Violet ring + gray</span> — Worked on gazetted holiday</div>
+      </div>
+
+
 
       <style jsx global>{`
         .today-day {
@@ -149,6 +196,40 @@ export default function CalendarSection() {
           color: white !important;
           box-shadow: 0 0 8px rgba(37, 99, 235, 0.5);
         }
+
+        /* 🔴 Gazetted holiday (no attendance) */
+.react-calendar__tile.holiday-gazetted {
+  background: #ef4444 !important;
+  color: white !important;
+  border-radius: 10px !important;
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
+}
+
+/* 🟡 Restricted holiday (no attendance) */
+.react-calendar__tile.holiday-restricted {
+  border: 2px solid #facc15 !important;
+  background: rgba(254, 243, 199, 0.5) !important;
+  color: #92400e !important;
+}
+
+/* 🔵 Attendance + Restricted */
+.react-calendar__tile.attended-day.restricted-ring {
+  box-shadow: 0 0 0 3px #facc15 inset !important;
+}
+
+/* 🔵 Attendance + Gazetted (rare/admin case) */
+.react-calendar__tile.attended-day.gazetted-ring {
+  box-shadow: 0 0 0 3px #ef4444 inset !important;
+}
+  /* 🟣 Worked on Gazetted Holiday */
+.react-calendar__tile.attended-holiday {
+  background: #e5e7eb !important; /* gray */
+  color: #1f2937 !important;
+  border-radius: 10px !important;
+  box-shadow: 0 0 0 3px #8b5cf6 inset !important; /* violet ring */
+}
+
+
       `}</style>
     </div>
   )
