@@ -20,35 +20,39 @@ export default function UserInfo() {
 
         fetchUser()
     }, [])
-    // console.log('User Data:', userData)
 
     if (!userData) return null
 
     return (
         <div
-            className="w-full
-        lg:w-3/12  mt-20 lg:mt-5 ml-5
-        flex items-center gap-4
-        px-4 py-2
-        rounded-2xl border border-white/30
-        backdrop-blur-2xl 
-        shadow-lg
-        hover:bg-white/30 transition-all duration-300
-      "
+            className="
+                /* Fixed width on mobile (max-width of screen minus margins) */
+                w-[calc(100%-2.5rem)] 
+                lg:w-3/12 
+                mt-20 lg:mt-5 ml-5
+                flex items-center gap-4
+                px-4 py-2
+                rounded-2xl border border-white/30
+                backdrop-blur-2xl 
+                shadow-lg
+                hover:bg-white/30 transition-all duration-300
+                /* Prevent container from growing beyond its parent */
+                overflow-hidden
+            "
         >
             <Image
                 width={200}
                 height={200}
                 src={userData.avatar}
                 alt="User Avatar"
-                className="w-12 h-12 rounded-full border border-white/50 shadow-sm object-cover"
+                className="w-12 h-12 flex-shrink-0 rounded-full border border-white/50 shadow-sm object-cover"
             />
 
-            <div className="flex flex-col leading-tight">
-                <span className="text-blue-800 font-semibold text-lg">
+            <div className="flex flex-col leading-tight min-w-0">
+                <span className="text-blue-800 font-semibold text-lg truncate">
                     {userData.name}
                 </span>
-                <span className="text-gray-600 text-sm max-w-[160px]">
+                <span className="text-gray-600 text-sm break-words">
                     {userData.email}
                 </span>
             </div>

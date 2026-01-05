@@ -1,10 +1,8 @@
 'use client'
 import Calendar from 'react-calendar'
 import dayjs from 'dayjs'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import 'react-calendar/dist/Calendar.css'
-// import { Tooltip } from 'react-tooltip'
-// import 'react-tooltip/dist/react-tooltip.css'
 import { supabase } from '@/lib/supabaseClient'
 
 export default function AdminEmployeeDetail({ employee, attendance }) {
@@ -12,6 +10,39 @@ export default function AdminEmployeeDetail({ employee, attendance }) {
     const [sessions, setSessions] = useState([])
     const [loadingSessions, setLoadingSessions] = useState(false)
     const [selectedSummary, setSelectedSummary] = useState(null)
+    const [holidays, setHolidays] = useState([])
+
+    useEffect(() => {
+        const fetchHolidays = async () => {
+            const startOfMonth = dayjs().startOf('month').format('YYYY-MM-DD')
+            const endOfMonth = dayjs().endOf('month').format('YYYY-MM-DD')
+
+            const { data } = await supabase
+                .from('holidays')
+                .select('date, type')
+                .gte('date', startOfMonth)
+                .lte('date', endOfMonth)
+
+            setHolidays(
+                data?.map(h => ({
+                    date: dayjs(h.date).format('YYYY-MM-DD'),
+                    type: h.type
+                })) || []
+            )
+        }
+
+        fetchHolidays()
+    }, [])
+
+    const holidayMap = useMemo(() => {
+        const map = {}
+        holidays.forEach(h => {
+            if (!map[h.date]) map[h.date] = []
+            map[h.date].push(h.type)
+        })
+        return map
+    }, [holidays])
+
 
 
     // Stats
@@ -23,15 +54,45 @@ export default function AdminEmployeeDetail({ employee, attendance }) {
     }, [attendance])
 
     // Calendar UI
+    // const tileClassName = ({ date, view }) => {
+    //     if (view === 'month') {
+    //         const d = dayjs(date).format('YYYY-MM-DD')
+    //         const record = attendance.find(a => dayjs(a.date).format('YYYY-MM-DD') === d)
+    //         if (record?.status === 'present') return 'attended-day'
+    //         if (record?.status === 'absent') return 'absent-day'
+    //     }
+    //     return null
+    // }
     const tileClassName = ({ date, view }) => {
-        if (view === 'month') {
-            const d = dayjs(date).format('YYYY-MM-DD')
-            const record = attendance.find(a => dayjs(a.date).format('YYYY-MM-DD') === d)
-            if (record?.status === 'present') return 'attended-day'
-            if (record?.status === 'absent') return 'absent-day'
+        if (view !== 'month') return null
+
+        const d = dayjs(date).format('YYYY-MM-DD')
+        const record = attendance.find(
+            a => dayjs(a.date).format('YYYY-MM-DD') === d
+        )
+        const dayHolidays = holidayMap[d] || []
+
+        // 🔵 Attendance always wins
+        if (record?.status === 'present') {
+            if (dayHolidays.includes('GAZETTED')) {
+                return 'attended-holiday'
+            }
+            if (dayHolidays.includes('RESTRICTED')) {
+                return 'attended-day restricted-ring'
+            }
+            return 'attended-day'
         }
+
+        // ❌ Absent (no work done)
+        if (record?.status === 'absent') return 'absent-day'
+
+        // Holidays without attendance
+        if (dayHolidays.includes('GAZETTED')) return 'holiday-gazetted-ring'
+        if (dayHolidays.includes('RESTRICTED')) return 'holiday-restricted-ring'
+
         return null
     }
+
 
     const tileContent = ({ date, view }) => {
         if (view === 'month') {
@@ -100,18 +161,14 @@ export default function AdminEmployeeDetail({ employee, attendance }) {
                         onClickDay={handleDateClick}
                         className="bg-white/60 rounded-xl shadow-md"
                     />
+                    <div className="mt-4 text-sm text-gray-700 space-y-1">
+                        <div>🔵 <span className="font-medium">Blue</span> — Attendance marked</div>
+                        <div>🟡 <span className="font-medium">Yellow ring</span> — Restricted holiday</div>
+                        <div>🔴 <span className="font-medium">Red ring</span> — Gazetted holiday</div>
+                        <div>🟣 <span className="font-medium">Violet ring + gray</span> — Worked on gazetted holiday</div>
+                    </div>
 
-                    {/* <Tooltip
-                        id="attendance-tooltip"
-                        place="top"
-                        style={{
-                            backgroundColor: '#1e3a8a',
-                            color: 'white',
-                            borderRadius: '8px',
-                            padding: '6px 10px',
-                            fontSize: '0.875rem'
-                        }}
-                    /> */}
+
                 </div>
 
                 {/* RIGHT */}
@@ -206,6 +263,26 @@ export default function AdminEmployeeDetail({ employee, attendance }) {
           color: white !important;
           border-radius: 10px !important;
         }
+          /* 🟡 Restricted holiday */
+.react-calendar__tile.holiday-restricted-ring {
+  box-shadow: 0 0 0 3px #facc15 inset !important;
+  border-radius: 10px !important;
+}
+
+/* 🔴 Gazetted holiday */
+.react-calendar__tile.holiday-gazetted-ring {
+  box-shadow: 0 0 0 3px #ef4444 inset !important;
+  border-radius: 10px !important;
+}
+
+/* 🟣 Worked on gazetted holiday */
+.react-calendar__tile.attended-holiday {
+  background: #e5e7eb !important; /* gray */
+  color: #1f2937 !important;
+  border-radius: 10px !important;
+  box-shadow: 0 0 0 3px #8b5cf6 inset !important; /* violet */
+}
+
       `}</style>
         </div>
     )

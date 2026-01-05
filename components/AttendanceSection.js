@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import dayjs from 'dayjs'
 import GlassCard from './GlassCard'
 import { supabase } from '@/lib/supabaseClient'
+import ConfirmModal from './shared/ConfirmModal'
 
 const STATES = {
   DAY_START: 'DAY_START',
@@ -19,6 +20,8 @@ export default function AttendanceSection() {
   const [openSession, setOpenSession] = useState(null)
   const [loading, setLoading] = useState(false)
   const [isHoliday, setIsHoliday] = useState(false)
+  const [showLogoffModal, setShowLogoffModal] = useState(false)
+
 
   /* ---------------- LOAD STATE FROM DB ---------------- */
   const loadState = async () => {
@@ -32,10 +35,13 @@ export default function AttendanceSection() {
       .eq('date', today)
       .maybeSingle()
 
-    if (holiday) {
-      setIsHoliday(true)
-      return
-    }
+    //gazetted holiday block work, other holidays, attendance still possible
+
+    // if (holiday?.type === 'GAZETTED') {
+    //   setIsHoliday(true)
+    //   return
+    // }
+
 
     // Attendance check
     const { data: attendance } = await supabase
@@ -136,6 +142,10 @@ export default function AttendanceSection() {
 
   // 4️⃣ Log Off (End Day)
   const logOff = async () => {
+    if (!summary.trim()) {
+      alert('Please add a work summary before logging off.')
+      return
+    }
     setLoading(true)
     const { data: { user } } = await supabase.auth.getUser()
 
@@ -168,58 +178,76 @@ export default function AttendanceSection() {
 
   /* ---------------- UI ---------------- */
 
-  if (isHoliday) {
-    return (
-      <GlassCard>
-        <h2 className="text-xl font-semibold text-blue-700">Today</h2>
-        <p className="text-red-500">Holiday 🎉</p>
-      </GlassCard>
-    )
-  }
+  // if (isHoliday) {
+  //   return (
+  //     <GlassCard>
+  //       <h2 className="text-xl font-semibold text-blue-700">Today</h2>
+  //       <p className="text-red-500">Holiday 🎉</p>
+  //     </GlassCard>
+  //   )
+  // }
 
   return (
-    <GlassCard className="space-y-4">
-      <h2 className="text-xl font-semibold text-blue-700">Work Day</h2>
+    <>
+      <GlassCard className="space-y-4">
+        <h2 className="text-xl font-semibold text-blue-700">Work Day</h2>
 
-      <textarea
-        className="w-full p-3 rounded-lg bg-white/30 border border-white/50"
-        placeholder="What did you work on today?"
-        value={summary}
-        onChange={(e) => setSummary(e.target.value)}
-        disabled={state === STATES.LOGGED_OFF}
+        <textarea
+          className="w-full p-3 rounded-lg bg-white/30 border border-white/50"
+          placeholder="What did you work on today?"
+          value={summary}
+          onChange={(e) => setSummary(e.target.value)}
+          disabled={state === STATES.LOGGED_OFF}
+        />
+
+        <button
+          disabled={loading || state !== STATES.DAY_START}
+          onClick={startWork}
+          className="w-full py-2 bg-blue-600 disabled:bg-gray-400 text-white rounded-lg"
+        >
+          Login / Start Work
+        </button>
+
+        <button
+          disabled={loading || state !== STATES.WORKING}
+          onClick={takeBreak}
+          className="w-full py-2 bg-yellow-500 disabled:bg-gray-400 text-white rounded-lg"
+        >
+          Take Break
+        </button>
+
+        <button
+          disabled={loading || state !== STATES.BREAK}
+          onClick={resumeWork}
+          className="w-full py-2 bg-green-600 disabled:bg-gray-400 text-white rounded-lg"
+        >
+          Resume Work
+        </button>
+
+        <button
+          disabled={loading || state === STATES.LOGGED_OFF || state === STATES.DAY_START}
+          onClick={() => setShowLogoffModal(true)}
+          className="w-full py-2 bg-red-600 disabled:bg-gray-400 text-white rounded-lg"
+        >
+          Log Off (End Day)
+        </button>
+        <p className='text-gray-700 text-sm text-center'>Please make sure to add work summary before logging off</p>
+      </GlassCard>
+      <ConfirmModal
+        open={showLogoffModal}
+        title="End work for today?"
+        description="This will log you off and mark today's attendance. You won't be able to edit it later."
+        confirmText="Yes, Log Off"
+        cancelText="Cancel"
+        loading={loading}
+        onClose={() => setShowLogoffModal(false)}
+        onConfirm={async () => {
+          if (loading) return
+          setShowLogoffModal(false)
+          await logOff() // 🔥 same existing logic
+        }}
       />
 
-      <button
-        disabled={loading || state !== STATES.DAY_START}
-        onClick={startWork}
-        className="w-full py-2 bg-blue-600 disabled:bg-gray-400 text-white rounded-lg"
-      >
-        Login / Start Work
-      </button>
-
-      <button
-        disabled={loading || state !== STATES.WORKING}
-        onClick={takeBreak}
-        className="w-full py-2 bg-yellow-500 disabled:bg-gray-400 text-white rounded-lg"
-      >
-        Take Break
-      </button>
-
-      <button
-        disabled={loading || state !== STATES.BREAK}
-        onClick={resumeWork}
-        className="w-full py-2 bg-green-600 disabled:bg-gray-400 text-white rounded-lg"
-      >
-        Resume Work
-      </button>
-
-      <button
-        disabled={loading || state === STATES.LOGGED_OFF || state === STATES.DAY_START}
-        onClick={logOff}
-        className="w-full py-2 bg-red-600 disabled:bg-gray-400 text-white rounded-lg"
-      >
-        Log Off (End Day)
-      </button>
-    </GlassCard>
+    </>
   )
 }
