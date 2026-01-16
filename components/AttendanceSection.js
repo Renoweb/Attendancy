@@ -4,6 +4,7 @@ import dayjs from 'dayjs'
 import GlassCard from './GlassCard'
 import { supabase } from '@/lib/supabaseClient'
 import ConfirmModal from './shared/ConfirmModal'
+import { formatMinutes } from '@/lib/SharedFucntions'
 
 const STATES = {
   DAY_START: 'DAY_START',
@@ -35,12 +36,6 @@ export default function AttendanceSection() {
       .eq('date', today)
       .maybeSingle()
 
-    //gazetted holiday block work, other holidays, attendance still possible
-
-    // if (holiday?.type === 'GAZETTED') {
-    //   setIsHoliday(true)
-    //   return
-    // }
 
 
     // Attendance check
@@ -173,19 +168,9 @@ export default function AttendanceSection() {
     setLoading(false)
 
     window.dispatchEvent(new CustomEvent('attendance-marked', { detail: today }))
-    alert(`Attendance marked ✅\nTotal: ${(totalMinutes / 60).toFixed(2)} hrs`)
+    alert(`Attendance marked ✅\nTotal: ${formatMinutes(totalMinutes)} hrs`)
   }
 
-  /* ---------------- UI ---------------- */
-
-  // if (isHoliday) {
-  //   return (
-  //     <GlassCard>
-  //       <h2 className="text-xl font-semibold text-blue-700">Today</h2>
-  //       <p className="text-red-500">Holiday 🎉</p>
-  //     </GlassCard>
-  //   )
-  // }
 
   return (
     <>

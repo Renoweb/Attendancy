@@ -4,6 +4,7 @@ import dayjs from 'dayjs'
 import { useEffect, useMemo, useState } from 'react'
 import 'react-calendar/dist/Calendar.css'
 import { supabase } from '@/lib/supabaseClient'
+import { formatMinutes } from '@/lib/SharedFucntions'
 
 export default function AdminEmployeeDetail({ employee, attendance }) {
     const [selectedDate, setSelectedDate] = useState(null)
@@ -53,16 +54,6 @@ export default function AdminEmployeeDetail({ employee, attendance }) {
         return { totalDays, present, absent }
     }, [attendance])
 
-    // Calendar UI
-    // const tileClassName = ({ date, view }) => {
-    //     if (view === 'month') {
-    //         const d = dayjs(date).format('YYYY-MM-DD')
-    //         const record = attendance.find(a => dayjs(a.date).format('YYYY-MM-DD') === d)
-    //         if (record?.status === 'present') return 'attended-day'
-    //         if (record?.status === 'absent') return 'absent-day'
-    //     }
-    //     return null
-    // }
     const tileClassName = ({ date, view }) => {
         if (view !== 'month') return null
 
@@ -233,7 +224,7 @@ export default function AdminEmployeeDetail({ employee, attendance }) {
                                                 </div>
 
                                                 <div className="text-blue-700 font-semibold">
-                                                    {(s.duration_minutes / 60).toFixed(2)} hrs
+                                                    {formatMinutes(s.duration_minutes)}
                                                 </div>
                                             </div>
                                         ))}
@@ -242,7 +233,7 @@ export default function AdminEmployeeDetail({ employee, attendance }) {
                                     <div className="mt-4 pt-3 border-t border-white/40 flex justify-between text-sm">
                                         <span className="font-medium text-gray-700">Total</span>
                                         <span className="font-bold text-blue-800">
-                                            {(totalMinutes / 60).toFixed(2)} hrs
+                                            {formatMinutes(totalMinutes)}
                                         </span>
                                     </div>
                                 </>
