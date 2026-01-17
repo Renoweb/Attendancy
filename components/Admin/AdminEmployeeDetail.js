@@ -4,14 +4,18 @@ import dayjs from 'dayjs'
 import { useEffect, useMemo, useState } from 'react'
 import 'react-calendar/dist/Calendar.css'
 import { supabase } from '@/lib/supabaseClient'
-import { formatMinutes } from '@/lib/SharedFucntions'
+import { fetchWeeklyMinutes, formatMinutes } from '@/lib/SharedFucntions'
 
 export default function AdminEmployeeDetail({ employee, attendance }) {
-    const [selectedDate, setSelectedDate] = useState(null)
-    const [sessions, setSessions] = useState([])
-    const [loadingSessions, setLoadingSessions] = useState(false)
-    const [selectedSummary, setSelectedSummary] = useState(null)
-    const [holidays, setHolidays] = useState([])
+    const [selectedDate, setSelectedDate] = useState(null) // Selected date on calendar
+    const [sessions, setSessions] = useState([]) // Work sessions for selected date
+    const [loadingSessions, setLoadingSessions] = useState(false) // Loading state for sessions
+    const [selectedSummary, setSelectedSummary] = useState(null) // Work summary for selected date
+    const [holidays, setHolidays] = useState([]) // Holidays in current month
+
+    // Weekly stats
+    const [weeklyTotal, setWeeklyTotal] = useState(null)
+    const [weeklyRange, setWeeklyRange] = useState(null)
 
     useEffect(() => {
         const fetchHolidays = async () => {
@@ -53,6 +57,15 @@ export default function AdminEmployeeDetail({ employee, attendance }) {
         const absent = totalDays - present
         return { totalDays, present, absent }
     }, [attendance])
+
+    // Load weekly hours on mount
+    const loadWeeklyHours = async (date) => {
+        const { totalMinutes, weekStart, weekEnd } =
+            await fetchWeeklyMinutes(employee.id, date)
+
+        setWeeklyTotal(totalMinutes)
+        setWeeklyRange({ weekStart, weekEnd })
+    }
 
     const tileClassName = ({ date, view }) => {
         if (view !== 'month') return null
@@ -108,6 +121,8 @@ export default function AdminEmployeeDetail({ employee, attendance }) {
         setSelectedDate(d)
         setLoadingSessions(true)
 
+        await loadWeeklyHours(d)
+
         const { data } = await supabase
             .from('work_sessions')
             .select('*')
@@ -144,7 +159,18 @@ export default function AdminEmployeeDetail({ employee, attendance }) {
                 {/* LEFT */}
                 <div className="lg:col-span-2">
                     <h3 className="text-xl font-semibold text-blue-800 mb-3">Attendance Calendar</h3>
-
+                    {/* Weekly total display */}
+                    {weeklyTotal !== null && (
+                        <div className="mt-4  rounded-xl p-4 border border-white/40">
+                            <p className="text-sm text-gray-600">
+                                Week ({dayjs(weeklyRange.weekStart).format('MMM D')} –{' '}
+                                {dayjs(weeklyRange.weekEnd).format('MMM D')})
+                            </p>
+                            <p className="text-lg font-semibold text-blue-700">
+                                Total: {formatMinutes(weeklyTotal)}
+                            </p>
+                        </div>
+                    )}
                     <Calendar
                         locale="en-US"
                         tileClassName={tileClassName}
