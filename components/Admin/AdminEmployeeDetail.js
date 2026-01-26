@@ -17,6 +17,13 @@ export default function AdminEmployeeDetail({ employee, attendance }) {
     const [weeklyTotal, setWeeklyTotal] = useState(null)
     const [weeklyRange, setWeeklyRange] = useState(null)
 
+    // Date range picker states
+    const [rangeStart, setRangeStart] = useState(null)
+    const [rangeEnd, setRangeEnd] = useState(null)
+    const [rangeTotal, setRangeTotal] = useState(null)
+    const [showPicker, setShowPicker] = useState(null) // 'start' | 'end' | null
+
+
     useEffect(() => {
         const fetchHolidays = async () => {
             const startOfMonth = dayjs().startOf('month').format('YYYY-MM-DD')
@@ -66,6 +73,48 @@ export default function AdminEmployeeDetail({ employee, attendance }) {
         setWeeklyTotal(totalMinutes)
         setWeeklyRange({ weekStart, weekEnd })
     }
+
+    // Date range select handler
+    const handleRangeSelect = (date) => {
+        const d = dayjs(date).format('YYYY-MM-DD')
+
+        if (showPicker === 'start') {
+            setRangeStart(d)
+            if (rangeEnd && d > rangeEnd) setRangeEnd(null)
+        }
+
+        if (showPicker === 'end') {
+            setRangeEnd(d)
+        }
+
+        setShowPicker(null)
+    }
+
+    // Load custom range hours
+    const loadCustomRangeHours = async () => {
+        if (!rangeStart || !rangeEnd) return
+
+        const { data } = await supabase
+            .from('work_sessions')
+            .select('duration_minutes')
+            .eq('user_id', employee.id)
+            .gte('date', rangeStart)
+            .lte('date', rangeEnd)
+
+        const total = data?.reduce(
+            (sum, s) => sum + (s.duration_minutes || 0),
+            0
+        ) || 0
+
+        setRangeTotal(total)
+    }
+
+    // Load custom range hours when range changes
+    useEffect(() => {
+        loadCustomRangeHours()
+    }, [rangeStart, rangeEnd])
+
+
 
     const tileClassName = ({ date, view }) => {
         if (view !== 'month') return null
@@ -152,7 +201,13 @@ export default function AdminEmployeeDetail({ employee, attendance }) {
     return (
         <div>
             <h2 className="text-3xl font-bold text-blue-700 mb-6">{employee.name}</h2>
-            <p className="text-gray-700 mb-2"><strong>Email:</strong> {employee.email}</p>
+            <p className="text-gray-700 mb-2">
+                <strong className="block">Email</strong>
+                <span className="text-gray-800 break-all">
+                    {employee.email}
+                </span>
+            </p>
+
             <p className="text-gray-700 mb-6"><strong>Role:</strong> {employee.role || '—'}</p>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
@@ -161,7 +216,7 @@ export default function AdminEmployeeDetail({ employee, attendance }) {
                     <h3 className="text-xl font-semibold text-blue-800 mb-3">Attendance Calendar</h3>
                     {/* Weekly total display */}
                     {weeklyTotal !== null && (
-                        <div className="mt-4  rounded-xl p-4 border border-white/40">
+                        <div className="mt-4  rounded-xl border border-white/40">
                             <p className="text-sm text-gray-600">
                                 Week ({dayjs(weeklyRange.weekStart).format('MMM D')} –{' '}
                                 {dayjs(weeklyRange.weekEnd).format('MMM D')})
@@ -171,6 +226,56 @@ export default function AdminEmployeeDetail({ employee, attendance }) {
                             </p>
                         </div>
                     )}
+
+                    <div className="mt-6 rounded-xl border mb-3 border-white/40 bg-white/30">
+                        <h4 className="text-lg font-semibold text-blue-700 mb-3">
+                            Custom Date Range
+                        </h4>
+
+                        <div className="flex gap-4 items-center">
+                            <button
+                                onClick={() =>
+                                    setShowPicker(prev => (prev === 'start' ? null : 'start'))
+                                }
+                                className="px-4 py-2 bg-white/60 rounded-lg border"
+                            >
+                                {rangeStart ? dayjs(rangeStart).format('DD MMM YYYY') : 'Start date'}
+                            </button>
+
+                            <button
+                                onClick={() =>
+                                    setShowPicker(prev => (prev === 'end' ? null : 'end'))
+                                }
+                                className="px-4 py-2 bg-white/60 rounded-lg border"
+                                disabled={!rangeStart}
+                            >
+                                {rangeEnd ? dayjs(rangeEnd).format('DD MMM YYYY') : 'End date'}
+                            </button>
+                        </div>
+
+                        {rangeTotal !== null && (
+                            <p className="mt-3 text-blue-800 font-semibold">
+                                Total: {formatMinutes(rangeTotal)}
+                            </p>
+                        )}
+
+                        {showPicker && (
+                            <div className="relative">
+                                <div className="absolute z-20 mt-3 rounded-2xl bg-white shadow-2xl border border-gray-200 p-3  left-[-50px]  mx-auto w-[95vw] max-w-[270px] md:max-w-[360px]">
+                                    <Calendar
+                                        onClickDay={handleRangeSelect}
+                                        minDate={
+                                            showPicker === 'end' && rangeStart
+                                                ? new Date(rangeStart)
+                                                : undefined
+                                        }
+                                    />
+                                </div>
+                            </div>
+                        )}
+
+                    </div>
+
                     <Calendar
                         locale="en-US"
                         tileClassName={tileClassName}
