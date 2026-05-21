@@ -8,6 +8,7 @@ import OnboardingModal from "@/components/OnboardingModal"
 import StatsCard from "@/components/StatsCard"
 import UserInfo from "@/components/UserInfo"
 import AuthSync from "@/lib/AuthSync"
+import QuickLinks from "@/components/QuickLinks"
 import { supabase } from "@/lib/supabaseClient"
 import dayjs from "dayjs"
 import { useRouter } from "next/navigation"
@@ -142,6 +143,7 @@ export default function DashboardPage() {
                 <OnboardingModal />
                 <LogoutButton />
                 <AuthSync />
+                <QuickLinks />
                 <div className="w-full max-w-5xl space-y-8">
                     <HeaderBanner />
 
