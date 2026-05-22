@@ -13,6 +13,8 @@ import { supabase } from "@/lib/supabaseClient"
 import dayjs from "dayjs"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
+import KanbanView from "@/components/kanban/KanbanView"
+import { LayoutDashboard, CheckSquare } from "lucide-react"
 
 function DashboardPageWrapper({ children }) {
     const router = useRouter()
@@ -33,6 +35,7 @@ export default function DashboardPage() {
     const [stats, setStats] = useState({ holidays: 0, attendance: 0, missed: 0 });
     const [isAdmin, setIsAdmin] = useState(false);
     const [loading, setLoading] = useState(true)
+    const [activeTab, setActiveTab] = useState('attendance')
 
     const router = useRouter()
 
@@ -144,21 +147,56 @@ export default function DashboardPage() {
                 <LogoutButton />
                 <AuthSync />
                 <QuickLinks />
-                <div className="w-full max-w-5xl space-y-8">
-                    <HeaderBanner />
+                <div className={`w-full space-y-8 transition-all duration-300 ${activeTab === 'kanban' ? 'max-w-[98%] px-2 lg:px-4' : 'max-w-5xl'}`}>
+                    {activeTab === 'attendance' && <HeaderBanner />}
 
-                    {/* Stats row */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                        {/* <StatsCard count={5} label="This Month Present" /> */}
-                        <StatsCard loading={loading} count={stats.holidays} label="Holidays" />
-                        <StatsCard loading={loading} count={stats.attendance} label="Total Attendance" />
-                        <StatsCard loading={loading} count={stats.missed} label="Missed Days" />
+                    {/* Pill Switcher */}
+                    <div className="flex justify-center mb-8">
+                        <div className="bg-white/60 backdrop-blur-md p-1 rounded-2xl shadow-sm border border-gray-100 flex items-center">
+                            <button
+                                onClick={() => setActiveTab('attendance')}
+                                className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 ${
+                                    activeTab === 'attendance'
+                                        ? 'bg-blue-600 text-white shadow-md'
+                                        : 'text-gray-500 hover:text-gray-800 hover:bg-gray-50'
+                                }`}
+                            >
+                                <LayoutDashboard className="w-4 h-4" />
+                                Attendance
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('kanban')}
+                                className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 ${
+                                    activeTab === 'kanban'
+                                        ? 'bg-blue-600 text-white shadow-md'
+                                        : 'text-gray-500 hover:text-gray-800 hover:bg-gray-50'
+                                }`}
+                            >
+                                <CheckSquare className="w-4 h-4" />
+                                Tasks
+                            </button>
+                        </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <AttendanceSection />
-                        <CalendarSection />
-                    </div>
+                    {activeTab === 'attendance' ? (
+                        <>
+                            {/* Stats row */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                                <StatsCard loading={loading} count={stats.holidays} label="Holidays" />
+                                <StatsCard loading={loading} count={stats.attendance} label="Total Attendance" />
+                                <StatsCard loading={loading} count={stats.missed} label="Missed Days" />
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+                                <AttendanceSection />
+                                <CalendarSection />
+                            </div>
+                        </>
+                    ) : (
+                        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            <KanbanView />
+                        </div>
+                    )}
                 </div>
             </div>
         </DashboardPageWrapper>
