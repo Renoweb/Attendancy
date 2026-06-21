@@ -5,6 +5,9 @@ import { useEffect, useMemo, useState } from 'react'
 import 'react-calendar/dist/Calendar.css'
 import { supabase } from '@/lib/supabaseClient'
 import { fetchWeeklyMinutes, formatMinutes } from '@/lib/SharedFucntions'
+import dynamic from 'next/dynamic'
+
+const RichTextEditor = dynamic(() => import('../RichTextEditor'), { ssr: false })
 
 export default function AdminEmployeeDetail({ employee, attendance }) {
     const [selectedDate, setSelectedDate] = useState(null) // Selected date on calendar
@@ -158,10 +161,11 @@ export default function AdminEmployeeDetail({ employee, attendance }) {
             const d = dayjs(date).format('YYYY-MM-DD')
             const record = attendance.find(a => dayjs(a.date).format('YYYY-MM-DD') === d)
             if (record?.work_summary) {
+                const rawSummary = record.work_summary.replace(/<[^>]*>?/gm, '');
                 return (
                     <div
                         data-tooltip-id="attendance-tooltip"
-                        data-tooltip-content={record.work_summary}
+                        data-tooltip-content={rawSummary}
                         className="w-full h-full"
                     />
                 )
@@ -222,7 +226,7 @@ export default function AdminEmployeeDetail({ employee, attendance }) {
                     <h3 className="text-xl font-semibold text-blue-800 dark:text-blue-400 mb-3">Attendance Calendar</h3>
                     {/* Weekly total display */}
                     {weeklyTotal !== null && (
-                        <div className="mt-4 rounded-xl border border-white/40 dark:border-[#222222]">
+                        <div className="mt-4">
                             <p className="text-sm text-gray-600 dark:text-gray-400">
                                 Week ({dayjs(weeklyRange.weekStart).format('MMM D')} –{' '}
                                 {dayjs(weeklyRange.weekEnd).format('MMM D')})
@@ -321,14 +325,11 @@ export default function AdminEmployeeDetail({ employee, attendance }) {
                                 Work Summary
                             </p>
 
-                            <div
-                                className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed max-h-56 overflow-y-auto pr-2"
-                                style={{
-                                    whiteSpace: 'pre-wrap',
-                                    wordBreak: 'break-word'
-                                }}
-                            >
-                                {selectedSummary}
+                            <div className="mt-2 text-sm max-h-56 overflow-y-auto pr-2">
+                                <RichTextEditor
+                                    value={selectedSummary}
+                                    readOnly={true}
+                                />
                             </div>
                         </div>
                     )}

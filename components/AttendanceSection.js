@@ -5,6 +5,9 @@ import GlassCard from './GlassCard'
 import { supabase } from '@/lib/supabaseClient'
 import ConfirmModal from './shared/ConfirmModal'
 import { formatMinutes } from '@/lib/SharedFucntions'
+import dynamic from 'next/dynamic'
+
+const RichTextEditor = dynamic(() => import('./RichTextEditor'), { ssr: false })
 
 const STATES = {
   DAY_START: 'DAY_START',
@@ -177,12 +180,11 @@ export default function AttendanceSection() {
       <GlassCard className="space-y-4">
         <h2 className="text-xl font-semibold text-blue-700 dark:text-blue-400">Work Day</h2>
 
-        <textarea
-          className="w-full p-3 rounded-lg bg-white/30 dark:bg-[#0a0a0a] border border-white/50 dark:border-[#333333] dark:text-gray-100 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          placeholder="What did you work on today?"
+        <RichTextEditor
           value={summary}
-          onChange={(e) => setSummary(e.target.value)}
-          disabled={state === STATES.LOGGED_OFF}
+          onChange={setSummary}
+          placeholder="What did you work on today?"
+          readOnly={state === STATES.LOGGED_OFF}
         />
 
         <button
