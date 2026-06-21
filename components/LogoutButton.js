@@ -32,7 +32,7 @@ export default function LogoutButton() {
         px-5 py-2.5 rounded-xl font-semibold
         text-white bg-blue-600
         hover:bg-blue-700 active:scale-95
-        disabled:bg-gray-400
+        disabled:bg-gray-400 dark:disabled:bg-gray-700
         transition-all duration-200
         shadow-md hover:shadow-lg
       `}

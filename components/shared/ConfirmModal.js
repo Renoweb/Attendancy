@@ -21,13 +21,13 @@ export default function ConfirmModal({
             />
 
             {/* Modal */}
-            <div className="relative z-10 mx-5 md:mx-0 w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+            <div className="relative z-10 mx-5 md:mx-0 w-full max-w-md rounded-2xl bg-white dark:bg-[#111111] p-6 shadow-xl dark:border dark:border-[#222222]">
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
                     {title}
                 </h3>
 
                 {description && (
-                    <p className="text-gray-600 mb-6">
+                    <p className="text-gray-600 dark:text-gray-400 mb-6">
                         {description}
                     </p>
                 )}
@@ -36,7 +36,7 @@ export default function ConfirmModal({
                     <button
                         onClick={onClose}
                         disabled={loading}
-                        className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 disabled:opacity-50"
+                        className="px-4 py-2 rounded-lg border border-gray-300 dark:border-[#333333] text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#1a1a1a] disabled:opacity-50"
                     >
                         {cancelText}
                     </button>

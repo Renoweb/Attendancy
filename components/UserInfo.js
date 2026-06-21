@@ -32,10 +32,10 @@ export default function UserInfo() {
                 mt-20 lg:mt-5 ml-5
                 flex items-center gap-4
                 px-4 py-2
-                rounded-2xl border border-white/30
-                backdrop-blur-2xl 
+                rounded-2xl border border-white/30 dark:border-[#222222]
+                backdrop-blur-2xl dark:bg-[#111111]
                 shadow-lg
-                hover:bg-white/30 transition-all duration-300
+                hover:bg-white/30 dark:hover:bg-[#1a1a1a] transition-all duration-300
                 /* Prevent container from growing beyond its parent */
                 overflow-hidden
             "
@@ -45,14 +45,14 @@ export default function UserInfo() {
                 height={200}
                 src={userData.avatar}
                 alt="User Avatar"
-                className="w-12 h-12 flex-shrink-0 rounded-full border border-white/50 shadow-sm object-cover"
+                className="w-12 h-12 flex-shrink-0 rounded-full border border-white/50 dark:border-[#333333] shadow-sm object-cover"
             />
 
             <div className="flex flex-col leading-tight min-w-0">
-                <span className="text-blue-800 font-semibold text-lg truncate">
+                <span className="text-blue-800 dark:text-white font-semibold text-lg truncate">
                     {userData.name}
                 </span>
-                <span className="text-gray-600 text-sm break-words">
+                <span className="text-gray-600 dark:text-gray-400 text-sm break-words">
                     {userData.email}
                 </span>
             </div>

@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
 import AdminEmployeeDetail from '@/components/Admin/AdminEmployeeDetail'
+import ThemeToggle from '@/components/ThemeToggle'
 
 
 export default function AdminEmployeePage() {
@@ -54,11 +55,11 @@ export default function AdminEmployeePage() {
         fetchData()
     }, [params.id, router])
 
-    if (loading) return <div className="p-10 text-center text-gray-600">Loading employee data...</div>
+    if (loading) return <div className="p-10 text-center text-gray-600 dark:text-gray-400">Loading employee data...</div>
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 p-10">
-            <div className="max-w-5xl mx-auto bg-white/40 backdrop-blur-2xl shadow-xl rounded-3xl p-8 border border-white/30">
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 dark:from-black dark:to-black p-10">
+            <div className="max-w-5xl mx-auto bg-white/40 dark:bg-[#0a0a0a] backdrop-blur-2xl shadow-xl rounded-3xl p-8 border border-white/30 dark:border-[#1a1a1a]">
                 <button
                     onClick={() => router.back()}
                     className="mb-6 bg-blue-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-blue-700 transition"
@@ -68,6 +69,8 @@ export default function AdminEmployeePage() {
 
                 <AdminEmployeeDetail employee={employee} attendance={attendance} />
             </div>
+            <ThemeToggle />
         </div>
     )
 }
+

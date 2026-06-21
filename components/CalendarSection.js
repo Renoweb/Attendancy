@@ -85,11 +85,6 @@ export default function CalendarSection() {
       const dayHolidays = holidayMap[d] || []
 
       // 🔵 Attendance ALWAYS wins
-      // if (attendanceDates.includes(d)) {
-      //   if (dayHolidays.includes('RESTRICTED')) return 'attended-day restricted-ring'
-      //   if (dayHolidays.includes('GAZETTED')) return 'attended-day gazetted-ring'
-      //   return 'attended-day'
-      // }
       if (attendanceDates.includes(d)) {
         if (dayHolidays.includes('GAZETTED')) {
           return 'attended-holiday'
@@ -114,8 +109,8 @@ export default function CalendarSection() {
 
 
   return (
-    <div className="p-6 rounded-2xl bg-white/20 border border-white/30 backdrop-blur-2xl shadow-lg">
-      <h2 className="text-xl font-semibold text-blue-700 mb-4">
+    <div className="p-6 rounded-2xl bg-white/20 dark:bg-[#111111] border border-white/30 dark:border-[#222222] backdrop-blur-2xl shadow-lg">
+      <h2 className="text-xl font-semibold text-blue-700 dark:text-blue-400 mb-4">
         Attendance Calendar
       </h2>
 
@@ -126,7 +121,7 @@ export default function CalendarSection() {
         className="opacity-95"
       />
 
-      <div className="mt-4 text-sm text-gray-700 space-y-1">
+      <div className="mt-4 text-sm text-gray-700 dark:text-gray-300 space-y-1">
         <div>🔵 <span className="font-medium">Blue</span> — Attendance marked</div>
         <div>🟡 <span className="font-medium">Yellow ring</span> — Restricted (optional) holiday</div>
         <div>🔴 <span className="font-medium">Red ring</span> — Gazetted holiday</div>

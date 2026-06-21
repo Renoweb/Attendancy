@@ -9,6 +9,7 @@ import StatsCard from "@/components/StatsCard"
 import UserInfo from "@/components/UserInfo"
 import AuthSync from "@/lib/AuthSync"
 import QuickLinks from "@/components/QuickLinks"
+import ThemeToggle from "@/components/ThemeToggle"
 import { supabase } from "@/lib/supabaseClient"
 import dayjs from "dayjs"
 import { useRouter } from "next/navigation"
@@ -139,11 +140,12 @@ export default function DashboardPage() {
             )}
 
             <UserInfo />
-            <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 flex items-center justify-center py-12 px-4">
+            <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 dark:from-black dark:via-black dark:to-black flex items-center justify-center py-12 px-4">
                 <OnboardingModal />
                 <LogoutButton />
                 <AuthSync />
                 <QuickLinks />
+                <ThemeToggle />
                 <div className="w-full max-w-5xl space-y-8">
                     <HeaderBanner />
 

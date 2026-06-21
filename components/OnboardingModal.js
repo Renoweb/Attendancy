@@ -99,19 +99,6 @@ export default function OnboardingModal() {
                 <h2 className="text-2xl font-semibold text-blue-700 mb-4">Welcome 👋</h2>
                 <p className="text-gray-700 mb-6">Before continuing, please tell us your role.</p>
 
-                {/* <select
-                    className="w-full mb-6 px-4 py-3 rounded-xl border border-white/40 bg-white/10 text-gray-800"
-                    value={role}
-                    onChange={(e) => setRole(e.target.value)}
-                >
-                    <option value="">Select your role</option>
-                    <option value="Developer">Developer</option>
-                    <option value="Designer">Designer</option>
-                    <option value="Manager">Manager</option>
-                    <option value="HR">HR</option>
-                    <option value="Marketing">Marketing</option>
-                    <option value="Other">Other</option>
-                </select> */}
                 <select
                     className="w-full mb-6 px-4 py-3 rounded-xl border border-white/40 bg-white/10 text-gray-800"
                     value={role}

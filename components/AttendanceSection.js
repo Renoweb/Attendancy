@@ -175,10 +175,10 @@ export default function AttendanceSection() {
   return (
     <>
       <GlassCard className="space-y-4">
-        <h2 className="text-xl font-semibold text-blue-700">Work Day</h2>
+        <h2 className="text-xl font-semibold text-blue-700 dark:text-blue-400">Work Day</h2>
 
         <textarea
-          className="w-full p-3 rounded-lg bg-white/30 border border-white/50"
+          className="w-full p-3 rounded-lg bg-white/30 dark:bg-[#0a0a0a] border border-white/50 dark:border-[#333333] dark:text-gray-100 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           placeholder="What did you work on today?"
           value={summary}
           onChange={(e) => setSummary(e.target.value)}
@@ -188,7 +188,7 @@ export default function AttendanceSection() {
         <button
           disabled={loading || state !== STATES.DAY_START}
           onClick={startWork}
-          className="w-full py-2 bg-blue-600 disabled:bg-gray-400 text-white rounded-lg"
+          className="w-full py-2 bg-blue-600 disabled:bg-gray-400 dark:disabled:bg-[#1a1a1a] dark:disabled:text-gray-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
         >
           Login / Start Work
         </button>
@@ -196,7 +196,7 @@ export default function AttendanceSection() {
         <button
           disabled={loading || state !== STATES.WORKING}
           onClick={takeBreak}
-          className="w-full py-2 bg-yellow-500 disabled:bg-gray-400 text-white rounded-lg"
+          className="w-full py-2 bg-yellow-500 disabled:bg-gray-400 dark:disabled:bg-[#1a1a1a] dark:disabled:text-gray-600 text-white rounded-lg font-medium hover:bg-yellow-600 transition-colors"
         >
           Take Break
         </button>
@@ -204,7 +204,7 @@ export default function AttendanceSection() {
         <button
           disabled={loading || state !== STATES.BREAK}
           onClick={resumeWork}
-          className="w-full py-2 bg-green-600 disabled:bg-gray-400 text-white rounded-lg"
+          className="w-full py-2 bg-green-600 disabled:bg-gray-400 dark:disabled:bg-[#1a1a1a] dark:disabled:text-gray-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors"
         >
           Resume Work
         </button>
@@ -212,11 +212,11 @@ export default function AttendanceSection() {
         <button
           disabled={loading || state === STATES.LOGGED_OFF || state === STATES.DAY_START}
           onClick={() => setShowLogoffModal(true)}
-          className="w-full py-2 bg-red-600 disabled:bg-gray-400 text-white rounded-lg"
+          className="w-full py-2 bg-red-600 disabled:bg-gray-400 dark:disabled:bg-[#1a1a1a] dark:disabled:text-gray-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors"
         >
           Log Off (End Day)
         </button>
-        <p className='text-gray-700 text-sm text-center'>Please make sure to add work summary before logging off</p>
+        <p className='text-gray-700 dark:text-gray-500 text-sm text-center'>Please make sure to add work summary before logging off</p>
       </GlassCard>
       <ConfirmModal
         open={showLogoffModal}

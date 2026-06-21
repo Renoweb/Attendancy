@@ -22,29 +22,35 @@ export default function AdminEmployeeDetail({ employee, attendance }) {
     const [rangeEnd, setRangeEnd] = useState(null)
     const [rangeTotal, setRangeTotal] = useState(null)
     const [showPicker, setShowPicker] = useState(null) // 'start' | 'end' | null
+    const [currentMonth, setCurrentMonth] = useState(dayjs()) // Track current month
 
+    const fetchHolidaysForMonth = async (month) => {
+        const startOfMonth = month.startOf('month').format('YYYY-MM-DD')
+        const endOfMonth = month.endOf('month').format('YYYY-MM-DD')
+
+        const { data } = await supabase
+            .from('holidays')
+            .select('date, type')
+            .gte('date', startOfMonth)
+            .lte('date', endOfMonth)
+
+        setHolidays(
+            data?.map(h => ({
+                date: dayjs(h.date).format('YYYY-MM-DD'),
+                type: h.type
+            })) || []
+        )
+    }
 
     useEffect(() => {
-        const fetchHolidays = async () => {
-            const startOfMonth = dayjs().startOf('month').format('YYYY-MM-DD')
-            const endOfMonth = dayjs().endOf('month').format('YYYY-MM-DD')
-
-            const { data } = await supabase
-                .from('holidays')
-                .select('date, type')
-                .gte('date', startOfMonth)
-                .lte('date', endOfMonth)
-
-            setHolidays(
-                data?.map(h => ({
-                    date: dayjs(h.date).format('YYYY-MM-DD'),
-                    type: h.type
-                })) || []
-            )
-        }
-
-        fetchHolidays()
+        fetchHolidaysForMonth(currentMonth)
     }, [])
+
+    const handleActiveStartDateChange = ({ activeStartDate }) => {
+        const newMonth = dayjs(activeStartDate)
+        setCurrentMonth(newMonth)
+        fetchHolidaysForMonth(newMonth)
+    }
 
     const holidayMap = useMemo(() => {
         const map = {}
@@ -200,35 +206,35 @@ export default function AdminEmployeeDetail({ employee, attendance }) {
 
     return (
         <div>
-            <h2 className="text-3xl font-bold text-blue-700 mb-6">{employee.name}</h2>
-            <p className="text-gray-700 mb-2">
-                <strong className="block">Email</strong>
-                <span className="text-gray-800 break-all">
+            <h2 className="text-3xl font-bold text-blue-700 dark:text-blue-400 mb-6">{employee.name}</h2>
+            <p className="text-gray-700 dark:text-gray-400 mb-2">
+                <strong className="block dark:text-gray-300">Email</strong>
+                <span className="text-gray-800 dark:text-gray-300 break-all">
                     {employee.email}
                 </span>
             </p>
 
-            <p className="text-gray-700 mb-6"><strong>Role:</strong> {employee.role || '—'}</p>
+            <p className="text-gray-700 dark:text-gray-400 mb-6"><strong className="dark:text-gray-300">Role:</strong> {employee.role || '—'}</p>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
                 {/* LEFT */}
                 <div className="lg:col-span-2">
-                    <h3 className="text-xl font-semibold text-blue-800 mb-3">Attendance Calendar</h3>
+                    <h3 className="text-xl font-semibold text-blue-800 dark:text-blue-400 mb-3">Attendance Calendar</h3>
                     {/* Weekly total display */}
                     {weeklyTotal !== null && (
-                        <div className="mt-4  rounded-xl border border-white/40">
-                            <p className="text-sm text-gray-600">
+                        <div className="mt-4 rounded-xl border border-white/40 dark:border-[#222222]">
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
                                 Week ({dayjs(weeklyRange.weekStart).format('MMM D')} –{' '}
                                 {dayjs(weeklyRange.weekEnd).format('MMM D')})
                             </p>
-                            <p className="text-lg font-semibold text-blue-700">
+                            <p className="text-lg font-semibold text-blue-700 dark:text-blue-400">
                                 Total: {formatMinutes(weeklyTotal)}
                             </p>
                         </div>
                     )}
 
-                    <div className="mt-6 rounded-xl border mb-3 border-white/40 bg-white/30">
-                        <h4 className="text-lg font-semibold text-blue-700 mb-3">
+                    <div className="mt-6 rounded-xl border mb-3 border-white/40 dark:border-[#222222] bg-white/30 dark:bg-[#111111] p-4">
+                        <h4 className="text-lg font-semibold text-blue-700 dark:text-blue-400 mb-3">
                             Custom Date Range
                         </h4>
 
@@ -237,7 +243,7 @@ export default function AdminEmployeeDetail({ employee, attendance }) {
                                 onClick={() =>
                                     setShowPicker(prev => (prev === 'start' ? null : 'start'))
                                 }
-                                className="px-4 py-2 bg-white/60 rounded-lg border"
+                                className="px-4 py-2 bg-white/60 dark:bg-[#1a1a1a] dark:text-gray-300 rounded-lg border dark:border-[#333333]"
                             >
                                 {rangeStart ? dayjs(rangeStart).format('DD MMM YYYY') : 'Start date'}
                             </button>
@@ -246,7 +252,7 @@ export default function AdminEmployeeDetail({ employee, attendance }) {
                                 onClick={() =>
                                     setShowPicker(prev => (prev === 'end' ? null : 'end'))
                                 }
-                                className="px-4 py-2 bg-white/60 rounded-lg border"
+                                className="px-4 py-2 bg-white/60 dark:bg-[#1a1a1a] dark:text-gray-300 rounded-lg border dark:border-[#333333]"
                                 disabled={!rangeStart}
                             >
                                 {rangeEnd ? dayjs(rangeEnd).format('DD MMM YYYY') : 'End date'}
@@ -254,14 +260,14 @@ export default function AdminEmployeeDetail({ employee, attendance }) {
                         </div>
 
                         {rangeTotal !== null && (
-                            <p className="mt-3 text-blue-800 font-semibold">
+                            <p className="mt-3 text-blue-800 dark:text-blue-400 font-semibold">
                                 Total: {formatMinutes(rangeTotal)}
                             </p>
                         )}
 
                         {showPicker && (
                             <div className="relative">
-                                <div className="absolute z-20 mt-3 rounded-2xl bg-white shadow-2xl border border-gray-200 p-3  left-[-50px]  mx-auto w-[95vw] max-w-[270px] md:max-w-[360px]">
+                                <div className="absolute z-20 mt-3 rounded-2xl bg-white dark:bg-[#111111] shadow-2xl border border-gray-200 dark:border-[#222222] p-3  left-[-50px]  mx-auto w-[95vw] max-w-[270px] md:max-w-[360px]">
                                     <Calendar
                                         onClickDay={handleRangeSelect}
                                         minDate={
@@ -276,14 +282,17 @@ export default function AdminEmployeeDetail({ employee, attendance }) {
 
                     </div>
 
-                    <Calendar
-                        locale="en-US"
-                        tileClassName={tileClassName}
-                        tileContent={tileContent}
-                        onClickDay={handleDateClick}
-                        className="bg-white/60 rounded-xl shadow-md"
-                    />
-                    <div className="mt-4 text-sm text-gray-700 space-y-1">
+                    <div className="bg-white/40 dark:bg-[#111111] p-4 rounded-2xl shadow-lg border border-white/40 dark:border-[#222222] backdrop-blur-xl max-w-[300px] md:max-w-[70%]">
+                        <Calendar
+                            locale="en-US"
+                            tileClassName={tileClassName}
+                            tileContent={tileContent}
+                            onClickDay={handleDateClick}
+                            onActiveStartDateChange={handleActiveStartDateChange}
+                            className="w-full opacity-95"
+                        />
+                    </div>
+                    <div className="mt-4 text-sm text-gray-700 dark:text-gray-300 space-y-1">
                         <div>🔵 <span className="font-medium">Blue</span> — Attendance marked</div>
                         <div>🟡 <span className="font-medium">Yellow ring</span> — Restricted holiday</div>
                         <div>🔴 <span className="font-medium">Red ring</span> — Gazetted holiday</div>
@@ -295,25 +304,25 @@ export default function AdminEmployeeDetail({ employee, attendance }) {
 
                 {/* RIGHT */}
                 <div>
-                    <h3 className="text-xl font-semibold text-blue-800 mb-3">
+                    <h3 className="text-xl font-semibold text-blue-800 dark:text-blue-400 mb-3">
                         Attendance Overview
                     </h3>
 
-                    <ul className="text-gray-700 space-y-1 mb-6">
-                        <li>Total Records: <strong>{stats.totalDays}</strong></li>
-                        <li>Days Present: <strong className="text-green-600">{stats.present}</strong></li>
-                        <li>Days Missed: <strong className="text-red-500">{stats.absent}</strong></li>
+                    <ul className="text-gray-700 dark:text-gray-300 space-y-1 mb-6">
+                        <li>Total Records: <strong className="dark:text-white">{stats.totalDays}</strong></li>
+                        <li>Days Present: <strong className="text-green-600 dark:text-green-400">{stats.present}</strong></li>
+                        <li>Days Missed: <strong className="text-red-500 dark:text-red-400">{stats.absent}</strong></li>
                     </ul>
 
                     {/* Summary */}
                     {selectedSummary && (
-                        <div className="mb-4 bg-blue-50 border border-blue-200 rounded-xl p-4">
-                            <p className="text-sm font-semibold text-blue-700 mb-2">
+                        <div className="mb-4 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900 rounded-xl p-4">
+                            <p className="text-sm font-semibold text-blue-700 dark:text-blue-400 mb-2">
                                 Work Summary
                             </p>
 
                             <div
-                                className="text-gray-700 text-sm leading-relaxed max-h-56 overflow-y-auto pr-2"
+                                className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed max-h-56 overflow-y-auto pr-2"
                                 style={{
                                     whiteSpace: 'pre-wrap',
                                     wordBreak: 'break-word'
@@ -328,42 +337,42 @@ export default function AdminEmployeeDetail({ employee, attendance }) {
 
                     {/* DAY DETAIL PANEL */}
                     {selectedDate && (
-                        <div className="bg-white/40 backdrop-blur-xl border border-white/40 rounded-2xl p-5 shadow-lg">
-                            <h4 className="text-lg font-semibold text-blue-700 mb-3">
+                        <div className="bg-white/40 dark:bg-[#111111] backdrop-blur-xl border border-white/40 dark:border-[#222222] rounded-2xl p-5 shadow-lg">
+                            <h4 className="text-lg font-semibold text-blue-700 dark:text-blue-400 mb-3">
                                 {dayjs(selectedDate).format('dddd, MMM D')}
                             </h4>
 
                             {loadingSessions ? (
-                                <p className="text-gray-500">Loading sessions…</p>
+                                <p className="text-gray-500 dark:text-gray-400">Loading sessions…</p>
                             ) : sessions.length === 0 ? (
-                                <p className="text-gray-500">No sessions recorded.</p>
+                                <p className="text-gray-500 dark:text-gray-400">No sessions recorded.</p>
                             ) : (
                                 <>
                                     <div className="space-y-3">
                                         {sessions.map((s, i) => (
                                             <div
                                                 key={s.id}
-                                                className="flex justify-between items-center bg-white/60 rounded-xl px-4 py-3 shadow-sm"
+                                                className="flex justify-between items-center bg-white/60 dark:bg-[#0a0a0a] rounded-xl px-4 py-3 shadow-sm dark:border dark:border-[#222222]"
                                             >
                                                 <div>
-                                                    <p className="text-sm text-gray-600">
+                                                    <p className="text-sm text-gray-600 dark:text-gray-500">
                                                         Session {i + 1}
                                                     </p>
-                                                    <p className="font-medium text-gray-800">
+                                                    <p className="font-medium text-gray-800 dark:text-gray-200">
                                                         {formatTime(s.start_time)} – {formatTime(s.end_time)}
                                                     </p>
                                                 </div>
 
-                                                <div className="text-blue-700 font-semibold">
+                                                <div className="text-blue-700 dark:text-blue-400 font-semibold">
                                                     {formatMinutes(s.duration_minutes)}
                                                 </div>
                                             </div>
                                         ))}
                                     </div>
 
-                                    <div className="mt-4 pt-3 border-t border-white/40 flex justify-between text-sm">
-                                        <span className="font-medium text-gray-700">Total</span>
-                                        <span className="font-bold text-blue-800">
+                                    <div className="mt-4 pt-3 border-t border-white/40 dark:border-[#222222] flex justify-between text-sm">
+                                        <span className="font-medium text-gray-700 dark:text-gray-300">Total</span>
+                                        <span className="font-bold text-blue-800 dark:text-blue-400">
                                             {formatMinutes(totalMinutes)}
                                         </span>
                                     </div>

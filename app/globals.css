@@ -79,19 +79,19 @@
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
+  --background: oklch(0 0 0);
   --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
+  --card: oklch(0.1 0 0);
   --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
+  --popover: oklch(0.1 0 0);
   --popover-foreground: oklch(0.985 0 0);
   --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
+  --primary-foreground: oklch(0.1 0 0);
+  --secondary: oklch(0.15 0 0);
   --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
+  --muted: oklch(0.15 0 0);
   --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
+  --accent: oklch(0.15 0 0);
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 10%);
@@ -102,11 +102,11 @@
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
+  --sidebar: oklch(0.1 0 0);
   --sidebar-foreground: oklch(0.985 0 0);
   --sidebar-primary: oklch(0.488 0.243 264.376);
   --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent: oklch(0.15 0 0);
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
@@ -126,4 +126,85 @@
   color: white !important;
   border-radius: 10px !important;
   box-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
+}
+
+/* ═══════════════ DARK MODE — Calendar tiles ═══════════════ */
+.dark .react-calendar {
+  background: transparent !important;
+  border: none !important;
+  color: #f3f4f6 !important;
+}
+
+.dark .react-calendar__navigation button {
+  color: #60a5fa !important;
+  font-weight: 700;
+}
+
+.dark .react-calendar__navigation button:hover {
+  background: #1a1a1a !important;
+}
+
+.dark .react-calendar__month-view__weekdays__weekday {
+  color: #60a5fa !important;
+}
+
+.dark .react-calendar__month-view__weekdays__weekday abbr {
+  text-decoration: none;
+}
+
+.dark .react-calendar__tile {
+  background: #0a0a0a !important;
+  color: #e5e7eb !important;
+  border-radius: 10px !important;
+  font-weight: 500;
+}
+
+.dark .react-calendar__tile:hover {
+  background: #1a1a1a !important;
+}
+
+.dark .react-calendar__tile--now {
+  background: #1e3a5f !important;
+  color: #93c5fd !important;
+}
+
+.dark .today-day {
+  background: #1e3a5f !important;
+  color: #93c5fd !important;
+}
+
+/* Dark mode: ensure status tiles override the default dark tile background */
+.dark .react-calendar__tile.attended-day {
+  background: #3b82f6 !important;
+  color: white !important;
+}
+
+.dark .react-calendar__tile.absent-day {
+  background: #ef4444 !important;
+  color: white !important;
+}
+
+.dark .react-calendar__tile.holiday-gazetted {
+  background: #ef4444 !important;
+  color: white !important;
+}
+
+.dark .react-calendar__tile.holiday-restricted {
+  border: 2px solid #facc15 !important;
+  background: rgba(254, 243, 199, 0.1) !important;
+  color: #fde047 !important;
+}
+
+.dark .react-calendar__tile.holiday-gazetted-ring {
+  box-shadow: 0 0 0 3px #ef4444 inset !important;
+}
+
+.dark .react-calendar__tile.holiday-restricted-ring {
+  box-shadow: 0 0 0 3px #facc15 inset !important;
+}
+
+.dark .react-calendar__tile.attended-holiday {
+  background: #374151 !important; /* dark mode gray */
+  color: #f3f4f6 !important;
+  box-shadow: 0 0 0 3px #8b5cf6 inset !important; /* violet ring */
 }
