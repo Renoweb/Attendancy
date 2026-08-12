@@ -128,6 +128,12 @@ export default function AttendanceSection() {
       })
       .eq('id', openSession.id)
 
+    fetch('/api/check-hours', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: openSession.user_id })
+    }).catch(console.error)
+
     setOpenSession(null)
     setState(STATES.BREAK)
     setLoading(false)
@@ -166,6 +172,12 @@ export default function AttendanceSection() {
       status: 'present',
       work_summary: summary || null
     })
+
+    fetch('/api/check-hours', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: user.id })
+    }).catch(console.error)
 
     setState(STATES.LOGGED_OFF)
     setLoading(false)

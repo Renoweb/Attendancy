@@ -4,6 +4,9 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
 import AdminEmployeeList from '@/components/Admin/AdminEmployeeList'
 import ThemeToggle from '@/components/ThemeToggle'
+import NotificationTray from '@/components/Admin/NotificationTray'
+import Link from 'next/link'
+import { BarChart3, TrendingUp } from 'lucide-react'
 
 export default function AdminPage() {
     const [loading, setLoading] = useState(true)
@@ -43,7 +46,7 @@ export default function AdminPage() {
             const { data: allEmployees, error: empErr } = await supabase
                 .from('employees')
                 .select('id, name, email, role')
-                .order('created_at', { ascending: true })
+                .order('name', { ascending: true })
 
             if (empErr) console.error(empErr)
             else setEmployees(allEmployees)
@@ -59,7 +62,20 @@ export default function AdminPage() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 dark:from-black dark:to-black p-10">
             <div className="max-w-6xl mx-auto bg-white/40 dark:bg-[#0a0a0a] backdrop-blur-2xl shadow-xl rounded-3xl p-8 border border-white/30 dark:border-[#1a1a1a]">
-                <h1 className="text-4xl font-bold text-blue-700 dark:text-blue-400 mb-8 text-center">Admin Dashboard</h1>
+                <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
+                    <h1 className="text-4xl font-bold text-blue-700 dark:text-blue-400 text-center sm:text-left">Admin Dashboard</h1>
+                    <div className="flex items-center gap-4">
+                        <Link href="/admin/hours-report" className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-lg transition-transform hover:scale-105 active:scale-95">
+                            <BarChart3 className="w-5 h-5" />
+                            <span className="font-semibold text-sm">Weekly Hours</span>
+                        </Link>
+                        <Link href="/admin/rate-report" className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl shadow-lg transition-transform hover:scale-105 active:scale-95">
+                            <TrendingUp className="w-5 h-5" />
+                            <span className="font-semibold text-sm">Working Rate Trends</span>
+                        </Link>
+                        <NotificationTray />
+                    </div>
+                </div>
                 <AdminEmployeeList employees={employees} />
             </div>
             <ThemeToggle />
