@@ -38,7 +38,7 @@ export default function RateReportPage() {
 
     if (!emp?.is_admin) return router.replace('/')
 
-    const { data: emps } = await supabase.from('employees').select('id, name')
+    const { data: emps } = await supabase.from('employees').select('id, name').eq('is_archived', false)
     
     // ========================================================================
     // MATH & AGGREGATION LOGIC: BUILDING THE TIMELINE

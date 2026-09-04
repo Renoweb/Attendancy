@@ -128,9 +128,14 @@ export default function AttendanceSection() {
       })
       .eq('id', openSession.id)
 
+    const { data: { session } } = await supabase.auth.getSession()
+
     fetch('/api/check-hours', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session?.access_token}`
+      },
       body: JSON.stringify({ user_id: openSession.user_id })
     }).catch(console.error)
 
@@ -173,9 +178,14 @@ export default function AttendanceSection() {
       work_summary: summary || null
     })
 
+    const { data: { session } } = await supabase.auth.getSession()
+
     fetch('/api/check-hours', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session?.access_token}`
+      },
       body: JSON.stringify({ user_id: user.id })
     }).catch(console.error)
 

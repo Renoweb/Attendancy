@@ -39,6 +39,7 @@ export default function HoursReportPage() {
     const { data: employees } = await supabase
       .from('employees')
       .select('id, name, role')
+      .eq('is_archived', false)
 
     const { data: sessions } = await supabase
       .from('work_sessions')

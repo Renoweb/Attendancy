@@ -43,12 +43,19 @@ export default function DashboardPage() {
             const { data: { user } } = await supabase.auth.getUser()
             if (!user) return
 
-            // Check if admin
+            // Check if admin and if archived
             const { data: emp } = await supabase
                 .from('employees')
-                .select('is_admin')
+                .select('is_admin, is_archived')
                 .eq('id', user.id)
                 .single()
+
+            if (emp?.is_archived) {
+                alert('Your account is archived. Please contact administration.')
+                await supabase.auth.signOut()
+                router.replace('/')
+                return
+            }
 
             if (emp?.is_admin) setIsAdmin(true)
 
