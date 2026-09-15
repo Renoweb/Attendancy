@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabaseClient'
 import AdminEmployeeList from '@/components/Admin/AdminEmployeeList'
 import ThemeToggle from '@/components/ThemeToggle'
 import NotificationTray from '@/components/Admin/NotificationTray'
+import Leaderboard from '@/components/Leaderboard'
 import Link from 'next/link'
 import { BarChart3, TrendingUp, Archive } from 'lucide-react'
 
@@ -88,6 +89,11 @@ export default function AdminPage() {
                         <NotificationTray />
                     </div>
                 </div>
+                
+                <div className="mb-8">
+                    <Leaderboard />
+                </div>
+
                 <AdminEmployeeList employees={employees} />
             </div>
             <ThemeToggle />

@@ -10,6 +10,7 @@ import UserInfo from "@/components/UserInfo"
 import AuthSync from "@/lib/AuthSync"
 import QuickLinks from "@/components/QuickLinks"
 import ThemeToggle from "@/components/ThemeToggle"
+import Leaderboard from "@/components/Leaderboard"
 import { supabase } from "@/lib/supabaseClient"
 import dayjs from "dayjs"
 import { useRouter } from "next/navigation"
@@ -163,6 +164,8 @@ export default function DashboardPage() {
                         <StatsCard loading={loading} count={stats.attendance} label="Total Attendance" />
                         <StatsCard loading={loading} count={stats.missed} label="Missed Days" />
                     </div>
+
+                    <Leaderboard />
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <AttendanceSection />

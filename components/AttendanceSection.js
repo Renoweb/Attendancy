@@ -25,6 +25,8 @@ export default function AttendanceSection() {
   const [loading, setLoading] = useState(false)
   const [isHoliday, setIsHoliday] = useState(false)
   const [showLogoffModal, setShowLogoffModal] = useState(false)
+  const [savingDraft, setSavingDraft] = useState(false)
+  const [draftSavedAt, setDraftSavedAt] = useState(null)
 
 
   /* ---------------- LOAD STATE FROM DB ---------------- */
@@ -39,7 +41,18 @@ export default function AttendanceSection() {
       .eq('date', today)
       .maybeSingle()
 
+    // Draft check
+    const { data: draft } = await supabase
+      .from('work_summary_drafts')
+      .select('draft_content, updated_at')
+      .eq('user_id', user.id)
+      .eq('date', today)
+      .maybeSingle()
 
+    if (draft) {
+      setSummary(draft.draft_content || '')
+      setDraftSavedAt(new Date(draft.updated_at))
+    }
 
     // Attendance check
     const { data: attendance } = await supabase
@@ -92,6 +105,29 @@ export default function AttendanceSection() {
     Math.max(0, Math.floor((new Date(end) - new Date(start)) / 60000))
 
   /* ---------------- ACTIONS ---------------- */
+
+  const saveDraft = async () => {
+    if (!summary.trim()) return
+    setSavingDraft(true)
+    const { data: { user } } = await supabase.auth.getUser()
+    
+    // Upsert the draft
+    const { error } = await supabase
+      .from('work_summary_drafts')
+      .upsert({
+        user_id: user.id,
+        date: today,
+        draft_content: summary,
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'user_id,date' })
+      
+    setSavingDraft(false)
+    if (!error) {
+      setDraftSavedAt(new Date())
+    } else {
+      console.error('Failed to save draft:', error)
+    }
+  }
 
   // 1️⃣ Login / Start Work
   const startWork = async () => {
@@ -202,12 +238,28 @@ export default function AttendanceSection() {
       <GlassCard className="space-y-4">
         <h2 className="text-xl font-semibold text-blue-700 dark:text-blue-400">Work Day</h2>
 
-        <RichTextEditor
-          value={summary}
-          onChange={setSummary}
-          placeholder="What did you work on today?"
-          readOnly={state === STATES.LOGGED_OFF}
-        />
+        <div className="flex flex-col gap-2">
+          <RichTextEditor
+            value={summary}
+            onChange={setSummary}
+            placeholder="What did you work on today?"
+            readOnly={state === STATES.LOGGED_OFF}
+          />
+          {state !== STATES.LOGGED_OFF && (
+            <div className="flex items-center justify-between px-1">
+              <span className="text-xs text-gray-500 dark:text-gray-400">
+                {draftSavedAt ? `Last saved at ${dayjs(draftSavedAt).format('h:mm A')}` : 'Not saved yet'}
+              </span>
+              <button
+                onClick={saveDraft}
+                disabled={savingDraft || !summary.trim()}
+                className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 disabled:opacity-50 transition-colors bg-blue-50 dark:bg-blue-900/30 px-3 py-1.5 rounded-md"
+              >
+                {savingDraft ? 'Saving...' : 'Save Draft'}
+              </button>
+            </div>
+          )}
+        </div>
 
         <button
           disabled={loading || state !== STATES.DAY_START}

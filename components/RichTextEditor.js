@@ -1,4 +1,5 @@
 'use client'
+import { useEffect } from 'react'
 
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
@@ -29,6 +30,12 @@ export default function RichTextEditor({ value, onChange, readOnly, placeholder 
             },
         },
     })
+
+    useEffect(() => {
+        if (editor && value !== editor.getHTML()) {
+            editor.commands.setContent(value)
+        }
+    }, [value, editor])
 
     if (!editor) {
         return <div className="min-h-[100px] p-3 text-gray-500">Loading editor...</div>
