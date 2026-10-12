@@ -9,7 +9,7 @@ import { Bold, Italic, List, Link as LinkIcon } from 'lucide-react'
 export default function RichTextEditor({ value, onChange, readOnly, placeholder }) {
     const editor = useEditor({
         extensions: [
-            StarterKit,
+            StarterKit.configure({ link: false }),
             Link.configure({
                 openOnClick: false,
                 HTMLAttributes: {
@@ -22,7 +22,9 @@ export default function RichTextEditor({ value, onChange, readOnly, placeholder 
         content: value,
         editable: !readOnly,
         onUpdate: ({ editor }) => {
-            onChange(editor.getHTML())
+            if (!readOnly && typeof onChange === 'function') {
+                onChange(editor.getHTML())
+            }
         },
         editorProps: {
             attributes: {
@@ -33,9 +35,15 @@ export default function RichTextEditor({ value, onChange, readOnly, placeholder 
 
     useEffect(() => {
         if (editor && value !== editor.getHTML()) {
-            editor.commands.setContent(value)
+            editor.commands.setContent(value ?? '', { emitUpdate: false })
         }
     }, [value, editor])
+
+    useEffect(() => {
+        if (editor) {
+            editor.setEditable(!readOnly, false)
+        }
+    }, [readOnly, editor])
 
     if (!editor) {
         return <div className="min-h-[100px] p-3 text-gray-500">Loading editor...</div>
